@@ -65,4 +65,27 @@ personsRouter.post("/", (request, response, next) => {
   // }
 });
 
+personsRouter.put("/:id", (request, response, next) => {
+  const { name, number } = request.body;
+
+  const phoneBook = {
+    name,
+    phoneNumber: number,
+  };
+
+  Phonebook.findByIdAndUpdate(request.params.id, phoneBook, {
+    new: true,
+    runValidators: true,
+    context: "query",
+  })
+    .then((updatedPhonebook) => {
+      if (!updatedPhonebook) {
+        return response.status(404).end();
+      }
+
+      response.json(updatedPhonebook);
+    })
+    .catch((err) => next(err));
+});
+
 export default personsRouter;
