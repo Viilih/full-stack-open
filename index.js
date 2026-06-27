@@ -1,41 +1,55 @@
-import express from 'express'
-import morgan from 'morgan'
-import cors from 'cors'
-import notesRouter from './routes/notes.js'
-import personsRouter from './routes/persons.js'
-import infoRouter from './routes/info.js'
+import express from "express";
+import morgan from "morgan";
+import cors from "cors";
+import dotenv from "dotenv";
+import "./database/db.js";
+import notesRouter from "./routes/notes.js";
+import personsRouter from "./routes/persons.js";
+import infoRouter from "./routes/info.js";
+import { errorHandler } from "./middlewares/index.js";
 
-const app = express()
+dotenv.config({ quiet: true });
 
-app.use(cors())
-app.use(express.json())
+const app = express();
 
-morgan.token('body', (req) => JSON.stringify(req.body))
+app.use(cors());
+app.use(express.json());
 
-app.use(morgan('tiny', {
-  skip: (req) => req.method === 'POST',
-}))
+morgan.token("body", (req) => JSON.stringify(req.body));
 
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body', {
-  skip: (req) => req.method !== 'POST',
-}))
+app.use(
+  morgan("tiny", {
+    skip: (req) => req.method === "POST",
+  }),
+);
 
-app.use('/api/notes', notesRouter)
-app.use('/api/persons', personsRouter)
-app.use('/info', infoRouter)
+app.use(
+  morgan(
+    ":method :url :status :res[content-length] - :response-time ms :body",
+    {
+      skip: (req) => req.method !== "POST",
+    },
+  ),
+);
 
-app.get('/', (request, response) => {
-  response.send('<h1>Hello Wolrld! </h1>')
-})
+app.use("/api/notes", notesRouter);
+app.use("/api/persons", personsRouter);
+app.use("/info", infoRouter);
+
+app.get("/", (request, response) => {
+  response.send("<h1>Hello Wolrld! </h1>");
+});
 
 const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: 'unknown endpoint' })
-}
+  response.status(404).send({ error: "unknown endpoint" });
+};
 
-app.use(unknownEndpoint)
+app.use(unknownEndpoint);
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT || 3001;
+
+app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
+  console.log(`Server running on port ${PORT}`);
+});

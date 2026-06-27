@@ -1,58 +1,68 @@
-import { Router } from 'express'
-import {
-  addPerson,
-  findPersonById,
-  generatePersonId,
-  getPhoneBook,
-  removePerson,
-} from '../data.js'
+import { Router } from "express";
+import { Phonebook } from "../database/schemas/pbSchema.js";
 
-const personsRouter = Router()
+const personsRouter = Router();
 
-personsRouter.get('/', (request, response) => {
-  response.json(getPhoneBook())
-})
+personsRouter.get("/", (request, response, next) => {
+  Phonebook.find({})
+    .then((phonebooks) => {
+      response.json(phonebooks);
+    })
+    .catch((err) => next(err));
+});
 
-personsRouter.get('/:id', (request, response) => {
-  const phoneBookEntity = findPersonById(request.params.id)
+personsRouter.get("/:id", (request, response, next) => {
+  Phonebook.findById(request.params.id)
+    .then((pb) => {
+      if (!pb) {
+        return response.status(404).end();
+      }
 
-  if (!phoneBookEntity) {
-    return response.status(404).json({ error: 'The phonebook was not found' })
-  }
+      response.json(pb);
+    })
+    .catch((err) => next(err));
+});
 
-  response.json(phoneBookEntity)
-})
+personsRouter.delete("/:id", (request, response, next) => {
+  Phonebook.findByIdAndDelete(request.params.id)
+    .then((result) => response.status(204).end())
+    .catch((err) => next(err));
+});
 
-personsRouter.delete('/:id', (request, response) => {
-  removePerson(request.params.id)
-  response.status(204).end()
-})
-
-personsRouter.post('/', (request, response) => {
-  const { body } = request
+personsRouter.post("/", (request, response, next) => {
+  const { body } = request;
 
   if (!body.name || !body.number) {
     return response.status(400).json({
-      error: 'content missing',
-    })
+      error: "content missing",
+    });
   }
+  // Fazer depois essa verificação
 
-  const existingName = getPhoneBook().find((person) => person.name === body.name)
+  //const existingName = getPhoneBook().find((person) => person.name === body.name)
 
-  if (existingName) {
-    return response.status(400).json({
-      error: 'Name already exists',
-    })
-  }
+  // if (existingName) {
+  //   return response.status(400).json({
+  //     error: 'Name already exists',
+  //   })
+  // }
 
-  const phone = {
-    id: generatePersonId(),
+  const phoneBook = new Phonebook({
     name: body.name,
-    number: body.number,
-  }
+    phoneNumber: body.number,
+  });
 
-  addPerson(phone)
-  response.json(phone)
-})
+  phoneBook
+    .save()
+    .then((savedPhonebook) => {
+      response.json(savedPhonebook);
+    })
+    .catch((err) => next(err));
+  // const phone = {
+  //   id: generatePersonId(),
+  //   name: body.name,
+  //   number: body.number,
+  // }
+});
 
-export default personsRouter
+export default personsRouter;
