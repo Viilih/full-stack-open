@@ -1,19 +1,10 @@
-import dotenv from "dotenv";
 import mongoose from "mongoose";
+import { MONGODB_URI } from "../utils/config.js";
+import logger from "../utils/logger.js";
 
-dotenv.config({ quiet: true });
-
-const password = process.argv[2];
-
-const connectionString =
-  process.env.MONGODB_URI ||
-  (password
-    ? `mongodb+srv://gnlnascimento:${encodeURIComponent(password)}@cluster0.xmtblus.mongodb.net/noteApp?retryWrites=true&w=majority&appName=Cluster0`
-    : undefined);
-
-if (!connectionString) {
-  console.error("Missing MongoDB connection string.");
-  console.error(
+if (!MONGODB_URI) {
+  logger.error("Missing MongoDB connection string.");
+  logger.error(
     "Set MONGODB_URI in .env or run this script with the database password as an argument.",
   );
   process.exit(1);
@@ -23,10 +14,10 @@ mongoose.set("strictQuery", false);
 
 // The connection should always use IPv4 (MongoDB Atlas supports only IPv4)
 mongoose
-  .connect(connectionString, { family: 4 })
-  .then((result) => {
-    console.log("connected to MongoDB");
+  .connect(MONGODB_URI, { family: 4, serverSelectionTimeoutMS: 10000 })
+  .then(() => {
+    logger.info("connected to MongoDB");
   })
   .catch((error) => {
-    console.log("error connecting to MongoDB", error.message);
+    logger.error("error connecting to MongoDB", error.message);
   });

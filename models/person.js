@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const phonebookSchema = new mongoose.Schema({
+const personSchema = new mongoose.Schema({
   name: {
     type: String,
     minlength: 3,
@@ -17,7 +17,7 @@ const phonebookSchema = new mongoose.Schema({
   },
 });
 
-phonebookSchema.set("toJSON", {
+personSchema.set("toJSON", {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
     returnedObject.number = returnedObject.phoneNumber;
@@ -27,4 +27,4 @@ phonebookSchema.set("toJSON", {
   },
 });
 
-export const Phonebook = mongoose.model("Phonebook", phonebookSchema);
+export const Person = mongoose.model("Phonebook", personSchema);

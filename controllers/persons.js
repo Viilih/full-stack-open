@@ -1,31 +1,31 @@
 import { Router } from "express";
-import { Phonebook } from "../database/schemas/pbSchema.js";
+import { Person } from "../models/person.js";
 
 const personsRouter = Router();
 
 personsRouter.get("/", (request, response, next) => {
-  Phonebook.find({})
-    .then((phonebooks) => {
-      response.json(phonebooks);
+  Person.find({})
+    .then((persons) => {
+      response.json(persons);
     })
     .catch((err) => next(err));
 });
 
 personsRouter.get("/:id", (request, response, next) => {
-  Phonebook.findById(request.params.id)
-    .then((pb) => {
-      if (!pb) {
+  Person.findById(request.params.id)
+    .then((person) => {
+      if (!person) {
         return response.status(404).end();
       }
 
-      response.json(pb);
+      response.json(person);
     })
     .catch((err) => next(err));
 });
 
 personsRouter.delete("/:id", (request, response, next) => {
-  Phonebook.findByIdAndDelete(request.params.id)
-    .then((result) => response.status(204).end())
+  Person.findByIdAndDelete(request.params.id)
+    .then(() => response.status(204).end())
     .catch((err) => next(err));
 });
 
@@ -37,53 +37,39 @@ personsRouter.post("/", (request, response, next) => {
       error: "content missing",
     });
   }
-  // Fazer depois essa verificação
 
-  //const existingName = getPhoneBook().find((person) => person.name === body.name)
-
-  // if (existingName) {
-  //   return response.status(400).json({
-  //     error: 'Name already exists',
-  //   })
-  // }
-
-  const phoneBook = new Phonebook({
+  const person = new Person({
     name: body.name,
     phoneNumber: body.number,
   });
 
-  phoneBook
+  person
     .save()
-    .then((savedPhonebook) => {
-      response.json(savedPhonebook);
+    .then((savedPerson) => {
+      response.json(savedPerson);
     })
     .catch((err) => next(err));
-  // const phone = {
-  //   id: generatePersonId(),
-  //   name: body.name,
-  //   number: body.number,
-  // }
 });
 
 personsRouter.put("/:id", (request, response, next) => {
   const { name, number } = request.body;
 
-  const phoneBook = {
+  const person = {
     name,
     phoneNumber: number,
   };
 
-  Phonebook.findByIdAndUpdate(request.params.id, phoneBook, {
+  Person.findByIdAndUpdate(request.params.id, person, {
     new: true,
     runValidators: true,
     context: "query",
   })
-    .then((updatedPhonebook) => {
-      if (!updatedPhonebook) {
+    .then((updatedPerson) => {
+      if (!updatedPerson) {
         return response.status(404).end();
       }
 
-      response.json(updatedPhonebook);
+      response.json(updatedPerson);
     })
     .catch((err) => next(err));
 });
